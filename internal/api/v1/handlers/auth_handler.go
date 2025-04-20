@@ -9,7 +9,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
-	"github.com/jackc/pgx/v5" // Import pgx for error checking
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/rakaarfi/attendance-system-be/internal/models"
 	"github.com/rakaarfi/attendance-system-be/internal/repository"
@@ -31,6 +31,18 @@ func NewAuthHandler(userRepo repository.UserRepository, roleRepo repository.Role
 	}
 }
 
+// Register godoc
+// @Summary Register New User
+// @Description Creates a new user account.
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param register body models.RegisterUserInput true "User Registration Details"
+// @Success 201 {object} models.Response{data=map[string]int} "User registered successfully, returns user ID"
+// @Failure 400 {object} models.Response "Validation failed or invalid request body"
+// @Failure 409 {object} models.Response "Username or Email already exists" // Tambahkan jika ada penanganan conflict
+// @Failure 500 {object} models.Response "Internal server error during registration"
+// @Router /auth/register [post]
 func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	input := new(models.RegisterUserInput)
 
@@ -111,6 +123,18 @@ func (h *AuthHandler) Register(c *fiber.Ctx) error {
 	})
 }
 
+// Login godoc
+// @Summary User Login
+// @Description Authenticates a user and returns a JWT token upon successful login.
+// @Tags Authentication
+// @Accept json
+// @Produce json
+// @Param login body models.LoginUserInput true "Login Credentials"
+// @Success 200 {object} models.Response{data=map[string]string} "Login successful, returns JWT token"
+// @Failure 400 {object} models.Response "Validation failed or invalid request body"
+// @Failure 401 {object} models.Response "Invalid username or password"
+// @Failure 500 {object} models.Response "Internal server error during login"
+// @Router /auth/login [post]
 func (h *AuthHandler) Login(c *fiber.Ctx) error {
 	input := new(models.LoginUserInput)
 
