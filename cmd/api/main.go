@@ -13,7 +13,32 @@ import (
 	appmiddleware "github.com/rakaarfi/attendance-system-be/internal/middleware"
 	"github.com/rakaarfi/attendance-system-be/internal/repository"
 	zlog "github.com/rs/zerolog/log"
+
+		_ "github.com/rakaarfi/attendance-system-be/docs" // Side effect import untuk docs.go (penting!)
+	fiberSwagger "github.com/swaggo/fiber-swagger"
 )
+
+// --- TAMBAHKAN BLOK ANOTASI SWAGGER INI ---
+// @title Sistem Absensi Pegawai API
+// @version 1.0
+// @description API backend untuk sistem absensi pegawai dengan role dan shift.
+// @termsOfService http://swagger.io/terms/
+
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
+
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host localhost:3000
+// @BasePath /api/v1
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
+// @description "Type 'Bearer YOUR_JWT_TOKEN' into the value field."
+// --- AKHIR BLOK ANOTASI ---
 
 func main() {
 	// 0. Load Konfigurasi
@@ -55,7 +80,7 @@ func main() {
 	authHandler := handlers.NewAuthHandler(userRepo, roleRepo)
 	// Inisialisasi AdminHandler dan UserHandler dengan dependensi yang benar
 	adminHandler := handlers.NewAdminHandler(shiftRepo, scheduleRepo, attendanceRepo, userRepo, roleRepo)
-	userHandler := handlers.NewUserHandler(attendanceRepo, scheduleRepo, userRepo)
+	userHandler := handlers.NewUserHandler(attendanceRepo, scheduleRepo, userRepo, shiftRepo)
 
 	// 5. Setup Fiber App
 	app := fiber.New(fiber.Config{
@@ -64,6 +89,12 @@ func main() {
 
 	// 6. Setup Rute (Tambahkan middleware logger)
 	appmiddleware.SetupGlobalMiddleware(app) // Panggil fungsi setup middleware
+
+	// Endpoint untuk menyajikan Swagger UI interaktif
+	// URL-nya akan menjadi http://localhost:3000/swagger/index.html
+	app.Get("/swagger/*", fiberSwagger.WrapHandler)
+    zlog.Info().Msg("Swagger UI endpoint registered at /swagger/*")
+	
 	v1.SetupRoutes(app, authHandler, adminHandler, userHandler)
 
 	// 7. Start Server
