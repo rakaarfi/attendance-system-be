@@ -1,0 +1,1113 @@
+basePath: /api/v1
+definitions:
+  models.AdminUpdateUserInput:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      role_id:
+        description: Pastikan role ID > 0
+        type: integer
+      username:
+        maxLength: 100
+        minLength: 3
+        type: string
+    required:
+    - email
+    - role_id
+    - username
+    type: object
+  models.Attendance:
+    properties:
+      check_in_at:
+        type: string
+      check_out_at:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: integer
+      notes:
+        type: string
+      updated_at:
+        type: string
+      user:
+        $ref: '#/definitions/models.User'
+      user_id:
+        type: integer
+    required:
+    - user_id
+    type: object
+  models.LoginUserInput:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  models.RegisterUserInput:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      password:
+        minLength: 6
+        type: string
+      role_id:
+        type: integer
+      username:
+        maxLength: 100
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    - role_id
+    - username
+    type: object
+  models.Response:
+    properties:
+      data: {}
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  models.Role:
+    properties:
+      id:
+        type: integer
+      name:
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - name
+    type: object
+  models.Shift:
+    properties:
+      created_at:
+        type: string
+      end_time:
+        description: Format HH:MM:SS
+        type: string
+      id:
+        type: integer
+      name:
+        maxLength: 100
+        minLength: 3
+        type: string
+      start_time:
+        description: Format HH:MM:SS
+        type: string
+      updated_at:
+        type: string
+    required:
+    - end_time
+    - name
+    - start_time
+    type: object
+  models.User:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      role:
+        $ref: '#/definitions/models.Role'
+      role_id:
+        type: integer
+      updated_at:
+        type: string
+      username:
+        maxLength: 100
+        minLength: 3
+        type: string
+    required:
+    - email
+    - role_id
+    - username
+    type: object
+  models.UserSchedule:
+    properties:
+      created_at:
+        type: string
+      date:
+        description: Format YYYY-MM-DD
+        type: string
+      id:
+        type: integer
+      shift:
+        $ref: '#/definitions/models.Shift'
+      shift_id:
+        type: integer
+      user:
+        $ref: '#/definitions/models.User'
+      user_id:
+        type: integer
+    required:
+    - date
+    - shift_id
+    - user_id
+    type: object
+host: localhost:3000
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: API backend untuk sistem absensi pegawai dengan role dan shift.
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  termsOfService: http://swagger.io/terms/
+  title: Sistem Absensi Pegawai API
+  version: "1.0"
+paths:
+  /admin/attendance/report:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a report of attendance records within a specified date
+        range for all users.
+      parameters:
+      - description: Start date for attendance retrieval (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: End date for attendance retrieval (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      - description: Page number for pagination
+        in: query
+        name: page
+        type: integer
+      - description: Limit of attendance records per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Attendance report retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Attendance'
+                  type: array
+              type: object
+        "400":
+          description: Validation failed or invalid request parameters
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during attendance retrieval
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: Get attendance report
+      tags:
+      - Admin - Attendance Management
+  /admin/roles:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves all available roles and their respective IDs.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Roles retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Role'
+                  type: array
+              type: object
+        "500":
+          description: Internal server error during role retrieval
+          schema:
+            $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all roles
+      tags:
+      - Admin - Roles Management
+    post:
+      consumes:
+      - application/json
+      description: Creates a new role and returns the ID of the created role.
+      parameters:
+      - description: Role details
+        in: body
+        name: create_role
+        required: true
+        schema:
+          $ref: '#/definitions/models.Role'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Role created successfully, returns role ID
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  type: integer
+              type: object
+        "400":
+          description: Validation failed or invalid request body
+          schema:
+            $ref: '#/definitions/models.Response'
+        "409":
+          description: Role with same name already exists
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during role creation
+          schema:
+            $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Create new role
+      tags:
+      - Admin - Roles Management
+  /admin/roles/{roleId}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes an existing role by its ID. Cannot delete base roles (Admin/Employee).
+      parameters:
+      - description: Role ID
+        in: path
+        name: roleId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role deleted successfully
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Invalid Role ID parameter
+          schema:
+            $ref: '#/definitions/models.Response'
+        "403":
+          description: Cannot delete base roles (Admin/Employee)
+          schema:
+            $ref: '#/definitions/models.Response'
+        "404":
+          description: Role not found
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during role deletion
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: Delete role
+      tags:
+      - Admin - Roles Management
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a role by its ID.
+      parameters:
+      - description: Role ID
+        in: path
+        name: roleId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Role'
+              type: object
+        "400":
+          description: Invalid Role ID parameter
+          schema:
+            $ref: '#/definitions/models.Response'
+        "404":
+          description: Role not found
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during role retrieval
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: Get role by ID
+      tags:
+      - Admin - Roles Management
+    patch:
+      consumes:
+      - application/json
+      description: Updates an existing role by its ID.
+      parameters:
+      - description: Role ID
+        in: path
+        name: roleId
+        required: true
+        type: integer
+      - description: Role details
+        in: body
+        name: update_role
+        required: true
+        schema:
+          $ref: '#/definitions/models.Role'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Role updated successfully
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Validation failed or invalid request body
+          schema:
+            $ref: '#/definitions/models.Response'
+        "404":
+          description: Role not found
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during role update
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: Update role
+      tags:
+      - Admin - Roles Management
+  /admin/schedules:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all schedules for all users.
+      parameters:
+      - description: Start date for schedule retrieval (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: End date for schedule retrieval (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      - description: Page number for pagination
+        in: query
+        name: page
+        type: integer
+      - description: Limit of schedules per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Schedules retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.UserSchedule'
+                  type: array
+              type: object
+        "400":
+          description: Validation failed or invalid request body
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during schedule retrieval
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: Get all schedules
+      tags:
+      - Admin - Schedule Management
+    post:
+      consumes:
+      - application/json
+      description: Creates a new schedule with a given user ID and shift ID.
+      parameters:
+      - description: Schedule details
+        in: body
+        name: create_schedule
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserSchedule'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Schedule created successfully, returns schedule ID
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  type: integer
+              type: object
+        "400":
+          description: Validation failed or invalid request body
+          schema:
+            $ref: '#/definitions/models.Response'
+        "409":
+          description: User already has a schedule on same date and time
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during schedule creation
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: Create new schedule
+      tags:
+      - Admin - Schedule Management
+  /admin/schedules/{scheduleId}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes an existing schedule by its ID.
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: scheduleId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Schedule deleted successfully
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/models.Response'
+        "404":
+          description: Schedule not found
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during schedule deletion
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: Delete schedule
+      tags:
+      - Admin - Schedule Management
+    patch:
+      consumes:
+      - application/json
+      description: Updates an existing schedule by its ID.
+      parameters:
+      - description: Schedule ID
+        in: path
+        name: scheduleId
+        required: true
+        type: integer
+      - description: Schedule details
+        in: body
+        name: update_schedule
+        required: true
+        schema:
+          $ref: '#/definitions/models.UserSchedule'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Schedule updated successfully
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Validation failed or invalid request body
+          schema:
+            $ref: '#/definitions/models.Response'
+        "404":
+          description: Schedule not found
+          schema:
+            $ref: '#/definitions/models.Response'
+        "409":
+          description: User already has a schedule on same date and time
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during schedule update
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: Update schedule
+      tags:
+      - Admin - Schedule Management
+  /admin/shifts:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all shifts.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Shifts retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Shift'
+                  type: array
+              type: object
+        "500":
+          description: Failed to retrieve shifts
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: Get all shifts
+      tags:
+      - Admin - Shift Management
+    post:
+      consumes:
+      - application/json
+      description: Creates a new shift and returns the ID of the created shift.
+      parameters:
+      - description: Shift details
+        in: body
+        name: create_shift
+        required: true
+        schema:
+          $ref: '#/definitions/models.Shift'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Shift created successfully, returns shift ID
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  type: integer
+              type: object
+        "400":
+          description: Validation failed or invalid request body
+          schema:
+            $ref: '#/definitions/models.Response'
+        "409":
+          description: Shift with same name already exists
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during shift creation
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: Create new shift
+      tags:
+      - Admin - Shift Management
+  /admin/shifts/{shiftId}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a shift by its ID.
+      parameters:
+      - description: Shift ID
+        in: path
+        name: shiftId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Shift deleted successfully
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Invalid Shift ID parameter
+          schema:
+            $ref: '#/definitions/models.Response'
+        "404":
+          description: Shift not found
+          schema:
+            $ref: '#/definitions/models.Response'
+        "409":
+          description: Shift still referenced by user schedules
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during shift deletion
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: Delete shift
+      tags:
+      - Admin - Shift Management
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a shift by its ID.
+      parameters:
+      - description: Shift ID
+        in: path
+        name: shiftId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Shift retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.Shift'
+              type: object
+        "400":
+          description: Invalid Shift ID parameter
+          schema:
+            $ref: '#/definitions/models.Response'
+        "404":
+          description: Shift not found
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Failed to retrieve shift
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: Get shift by ID
+      tags:
+      - Admin - Shift Management
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing shift based on the provided shift ID and details.
+      parameters:
+      - description: Shift ID
+        in: path
+        name: shiftId
+        required: true
+        type: integer
+      - description: Updated shift details
+        in: body
+        name: update_shift
+        required: true
+        schema:
+          $ref: '#/definitions/models.Shift'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Shift updated successfully
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Invalid Shift ID parameter or request body
+          schema:
+            $ref: '#/definitions/models.Response'
+        "404":
+          description: Shift not found
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during shift update
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: Update shift
+      tags:
+      - Admin - Shift Management
+  /admin/users:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a paginated list of all users. Requires Admin role.
+      parameters:
+      - default: 1
+        description: Page number for pagination
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of items per page
+        in: query
+        maximum: 100
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Successfully retrieved users with pagination metadata
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid query parameters
+          schema:
+            $ref: '#/definitions/models.Response'
+        "401":
+          description: Unauthorized (Invalid or missing token)
+          schema:
+            $ref: '#/definitions/models.Response'
+        "403":
+          description: Forbidden (User is not an Admin)
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Get All Users (Admin)
+      tags:
+      - Admin - Users Management
+  /admin/users/{userId}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a specific user by ID. Requires Admin role. Admin cannot
+        delete themselves.
+      parameters:
+      - description: User ID to delete
+        in: path
+        name: userId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User deleted successfully
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Invalid User ID parameter
+          schema:
+            $ref: '#/definitions/models.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.Response'
+        "403":
+          description: Forbidden (Not Admin or attempting self-delete)
+          schema:
+            $ref: '#/definitions/models.Response'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete User (Admin)
+      tags:
+      - Admin - Users Management
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a user by its ID.
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.User'
+              type: object
+        "400":
+          description: Invalid User ID parameter
+          schema:
+            $ref: '#/definitions/models.Response'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during user retrieval
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: Get user by ID
+      tags:
+      - Admin - Users Management
+    patch:
+      consumes:
+      - application/json
+      description: Updates an existing user by its ID.
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: User details
+        in: body
+        name: update_user
+        required: true
+        schema:
+          $ref: '#/definitions/models.AdminUpdateUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User updated successfully
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Validation failed or invalid request body
+          schema:
+            $ref: '#/definitions/models.Response'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during user update
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: Update user
+      tags:
+      - Admin - Users Management
+  /admin/users/{userId}/attendance:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves attendance records for a specific user within a date
+        range.
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Start date for attendance retrieval (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: End date for attendance retrieval (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      - description: Page number for pagination
+        in: query
+        name: page
+        type: integer
+      - description: Limit of attendance records per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Attendance retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Attendance'
+                  type: array
+              type: object
+        "400":
+          description: Validation failed or invalid request parameters
+          schema:
+            $ref: '#/definitions/models.Response'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during attendance retrieval
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: Get user attendance
+      tags:
+      - Admin - Attendance Management
+  /admin/users/{userId}/schedules:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of schedules for a specific user.
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: integer
+      - description: Start date for schedule retrieval (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: End date for schedule retrieval (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      - description: Page number for pagination
+        in: query
+        name: page
+        type: integer
+      - description: Limit of schedules per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Schedules retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.UserSchedule'
+                  type: array
+              type: object
+        "400":
+          description: Validation failed or invalid request body
+          schema:
+            $ref: '#/definitions/models.Response'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during schedule retrieval
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: Get schedules for user
+      tags:
+      - Admin - Schedule Management
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and returns a JWT token upon successful login.
+      parameters:
+      - description: Login Credentials
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/models.LoginUserInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful, returns JWT token
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "400":
+          description: Validation failed or invalid request body
+          schema:
+            $ref: '#/definitions/models.Response'
+        "401":
+          description: Invalid username or password
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during login
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: User Login
+      tags:
+      - Authentication
+  /auth/register:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new user account.
+      parameters:
+      - description: User Registration Details
+        in: body
+        name: register
+        required: true
+        schema:
+          $ref: '#/definitions/models.RegisterUserInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User registered successfully, returns user ID
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  additionalProperties:
+                    type: integer
+                  type: object
+              type: object
+        "400":
+          description: Validation failed or invalid request body
+          schema:
+            $ref: '#/definitions/models.Response'
+        "409":
+          description: Username or Email already exists" // Tambahkan jika ada penanganan
+            conflict
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during registration
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: Register New User
+      tags:
+      - Authentication
+securityDefinitions:
+  ApiKeyAuth:
+    description: '"Type ''Bearer YOUR_JWT_TOKEN'' into the value field."'
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
