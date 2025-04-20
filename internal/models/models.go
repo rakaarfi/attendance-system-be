@@ -88,7 +88,6 @@ type AdminUpdateUserInput struct {
 	FirstName string `json:"first_name,omitempty"`
 	LastName  string `json:"last_name,omitempty"`
 	RoleID    int    `json:"role_id" validate:"required,gt=0"` // Pastikan role ID > 0
-    // TIDAK ADA Password di sini. Buat endpoint terpisah jika Admin bisa reset password.
 }
 
 type UpdateProfileInput struct {
