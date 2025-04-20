@@ -46,5 +46,9 @@ type AttendanceRepository interface {
 }
 
 type RoleRepository interface {
+	CreateRole(ctx context.Context, role *models.Role) (int, error)
 	GetRoleByID(ctx context.Context, id int) (*models.Role, error)
+	GetAllRoles(ctx context.Context) ([]models.Role, error)
+	UpdateRole(ctx context.Context, role *models.Role) error
+	DeleteRole(ctx context.Context, id int) error
 }
