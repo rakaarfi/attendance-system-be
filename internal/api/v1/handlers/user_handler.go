@@ -21,14 +21,16 @@ type UserHandler struct {
 	AttendanceRepo repository.AttendanceRepository
 	ScheduleRepo   repository.ScheduleRepository
 	UserRepo       repository.UserRepository
+	ShiftRepo      repository.ShiftRepository
 	Validate       *validator.Validate
 }
 
-func NewUserHandler(attRepo repository.AttendanceRepository, schedRepo repository.ScheduleRepository, userRepo repository.UserRepository) *UserHandler {
+func NewUserHandler(attRepo repository.AttendanceRepository, schedRepo repository.ScheduleRepository, userRepo repository.UserRepository, shiftRepo repository.ShiftRepository) *UserHandler {
 	return &UserHandler{
 		AttendanceRepo: attRepo,
 		ScheduleRepo:   schedRepo,
 		UserRepo:       userRepo,
+		ShiftRepo:      shiftRepo,
 		Validate:       validator.New(),
 	}
 }
@@ -401,4 +403,57 @@ func (h *UserHandler) UpdateMyPassword(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(models.Response{
 		Success: true, Message: "Password updated successfully",
 	})
+}
+
+func (h *UserHandler) GetMyProfile(c *fiber.Ctx) error {
+	// 1. Dapatkan ID user dari JWT
+	userID, err := utils.ExtractUserIDFromJWT(c)
+	if err != nil {
+		zlog.Error().Err(err).Msg("Error extracting userID from JWT for get profile")
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Success: false, Message: "Failed to identify user",
+		})
+	}
+
+	// 2. Panggil repository untuk mendapatkan data user
+	// Kita gunakan GetUserByID yang mengambil user *beserta role*-nya
+	userProfile, err := h.UserRepo.GetUserByID(context.Background(), userID)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			// Ini sangat aneh jika terjadi karena ID dari token JWT yang valid
+			zlog.Error().Err(err).Int("user_id", userID).Msg("User from valid JWT not found in DB for get profile")
+			return c.Status(fiber.StatusNotFound).JSON(models.Response{
+				Success: false, Message: "User profile not found",
+			})
+		}
+		// Error lain
+		zlog.Error().Err(err).Int("user_id", userID).Msg("Failed to get user profile from repository")
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Success: false, Message: "Failed to retrieve profile",
+		})
+	}
+
+	// 3. Kirim response sukses (password sudah otomatis tidak ada karena repo GetUserByID tidak memilihnya)
+	zlog.Info().Int("user_id", userID).Msg("User profile retrieved successfully")
+	return c.Status(http.StatusOK).JSON(models.Response{
+		Success: true, Message: "Profile retrieved successfully", Data: userProfile, // Kirim data user
+	})
+}
+
+func (h *UserHandler) GetAllShifts(c *fiber.Ctx) error {
+    // Dapatkan ID user dari JWT (walaupun tidak dipakai di query, baik untuk log/konteks)
+    userID, _ := utils.ExtractUserIDFromJWT(c) // Abaikan error jika hanya untuk log
+
+    shifts, err := h.ShiftRepo.GetAllShifts(context.Background())
+    if err != nil {
+        zlog.Error().Err(err).Int("user_id", userID).Msg("Failed to get all shifts from repository")
+        return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+            Success: false, Message: "Failed to retrieve shifts",
+        })
+    }
+
+    zlog.Info().Int("user_id", userID).Int("shift_count", len(shifts)).Msg("Successfully retrieved all shifts")
+    return c.Status(http.StatusOK).JSON(models.Response{
+        Success: true, Message: "Shifts retrieved successfully", Data: shifts,
+    })
 }
