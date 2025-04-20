@@ -92,7 +92,7 @@ func SetupRoutes(app *fiber.App, authHandler *handlers.AuthHandler, adminHandler
 	api.Get("/health", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "UP"})
 	})
-	
+
 	// Endpoint untuk melihat semua shift
 	api.Get("/shifts", userHandler.GetAllShifts)
 }
