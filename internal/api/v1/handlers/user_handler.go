@@ -35,6 +35,18 @@ func NewUserHandler(attRepo repository.AttendanceRepository, schedRepo repositor
 	}
 }
 
+// @Summary      Create a check-in record
+// @Description  Create a new record of check-in for the user. The request body should contain the notes for the check-in (optional).
+// @Tags         User - Check In/Out
+// @Accept       json
+// @Produce      json
+// @Param        check_in_input  body     models.CheckInInput  true  "Check-in notes"
+// @Success      201             {object} models.Response
+// @Failure      400             {object} models.Response
+// @Failure      401             {object} models.Response
+// @Failure      500             {object} models.Response
+// @Security ApiKeyAuth
+// @Router       /user/attendance/checkin       [post]
 func (h *UserHandler) CheckIn(c *fiber.Ctx) error {
 	userID, err := utils.ExtractUserIDFromJWT(c)
 	if err != nil {
@@ -101,6 +113,19 @@ func (h *UserHandler) CheckIn(c *fiber.Ctx) error {
 	})
 }
 
+// @Summary      Create a check-out record
+// @Description  Create a new record of check-out for the user. The request body should contain the notes for the check-out (optional).
+// @Tags         User - Check In/Out
+// @Accept       json
+// @Produce      json
+// @Param        check_out_input  body     models.CheckOutInput  true  "Check-out notes"
+// @Success      201             {object} models.Response
+// @Failure      400             {object} models.Response
+// @Failure      401             {object} models.Response
+// @Failure      404             {object} models.Response
+// @Failure      500             {object} models.Response
+// @Security ApiKeyAuth
+// @Router       /user/attendance/checkout       [post]
 func (h *UserHandler) CheckOut(c *fiber.Ctx) error {
 	userID, err := utils.ExtractUserIDFromJWT(c)
 	if err != nil {
@@ -167,6 +192,19 @@ func (h *UserHandler) CheckOut(c *fiber.Ctx) error {
 	})
 }
 
+// @Summary      Get attendance records for current user
+// @Description  Get attendance records for the current user within a date range.
+// @Tags User - Schedule/Attendance
+// @Accept       json
+// @Produce      json
+// @Param        start_date  query     time.Time  false  "Start date of attendance records (inclusive)"
+// @Param        end_date    query     time.Time  false  "End date of attendance records (inclusive)"
+// @Success      200         {object}  models.Response
+// @Failure      400         {object}  models.Response
+// @Failure      401         {object}  models.Response
+// @Failure      500         {object}  models.Response
+// @Security ApiKeyAuth
+// @Router       /user/attendance/my  [get]
 func (h *UserHandler) GetMyAttendance(c *fiber.Ctx) error {
 	userID, err := utils.ExtractUserIDFromJWT(c)
 	if err != nil {
@@ -213,6 +251,21 @@ func (h *UserHandler) GetMyAttendance(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(response)
 }
 
+// GetMySchedules godoc
+// @Summary Get schedules for the current user
+// @Description Retrieves a list of schedules for the current user within a date range.
+// @Tags User - Schedule/Attendance
+// @Accept json
+// @Produce json
+// @Param start_date query string false "Start date for schedule retrieval (YYYY-MM-DD)"
+// @Param end_date query string false "End date for schedule retrieval (YYYY-MM-DD)"
+// @Param page query int false "Page number for pagination"
+// @Param limit query int false "Limit of schedules per page"
+// @Success 200 {object} models.Response{data=[]models.UserSchedule} "Schedules retrieved successfully"
+// @Failure 400 {object} models.Response "Validation failed or invalid request parameters"
+// @Failure 500 {object} models.Response "Internal server error during schedule retrieval"
+// @Security ApiKeyAuth
+// @Router /user/schedules/my [get]
 func (h *UserHandler) GetMySchedules(c *fiber.Ctx) error {
 	userID, err := utils.ExtractUserIDFromJWT(c)
 	if err != nil {
@@ -256,6 +309,19 @@ func (h *UserHandler) GetMySchedules(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(response)
 }
 
+// UpdateMyProfile godoc
+// @Summary Update my profile
+// @Description Update the profile for the current user.
+// @Tags User - Profile Management
+// @Accept json
+// @Produce json
+// @Param update_profile_input body models.UpdateProfileInput true "Profile update information"
+// @Success 200 {object} models.Response "Profile updated successfully"
+// @Failure 400 {object} models.Response "Validation failed or invalid request body"
+// @Failure 401 {object} models.Response "Failed to identify user"
+// @Failure 500 {object} models.Response "Internal server error during profile update"
+// @Security ApiKeyAuth
+// @Router /user/profile [patch]
 func (h *UserHandler) UpdateMyProfile(c *fiber.Ctx) error {
 	// 1. Dapatkan ID user dari JWT (bukan dari URL)
 	userID, err := utils.ExtractUserIDFromJWT(c)
@@ -317,6 +383,18 @@ func (h *UserHandler) UpdateMyProfile(c *fiber.Ctx) error {
 	})
 }
 
+// @Summary Update My Password
+// @Description Updates the current user's password.
+// @Tags User - Profile Management
+// @Accept json
+// @Produce json
+// @Param update_password body models.UpdatePasswordInput true "Password Update Details"
+// @Success 200 {object} models.Response "Password updated successfully"
+// @Failure 400 {object} models.Response "Validation failed or invalid request body"
+// @Failure 401 {object} models.Response "Invalid old password"
+// @Failure 500 {object} models.Response "Internal server error during password update"
+// @Security ApiKeyAuth
+// @Router /user/password [patch]
 func (h *UserHandler) UpdateMyPassword(c *fiber.Ctx) error {
 	// 1. Dapatkan ID user dari JWT
 	userID, err := utils.ExtractUserIDFromJWT(c)
@@ -405,6 +483,17 @@ func (h *UserHandler) UpdateMyPassword(c *fiber.Ctx) error {
 	})
 }
 
+// GetMyProfile godoc
+// @Summary Get my profile
+// @Description Get the profile for the current user.
+// @Tags User - Profile Management
+// @Produce json
+// @Success 200 {object} models.Response{data=map[string]interface{}} "Profile data for current user"
+// @Failure 400 {object} models.Response "Validation failed or invalid request body"
+// @Failure 401 {object} models.Response "Failed to identify user"
+// @Failure 500 {object} models.Response "Internal server error during profile retrieval"
+// @Security ApiKeyAuth
+// @Router /user/profile [get]
 func (h *UserHandler) GetMyProfile(c *fiber.Ctx) error {
 	// 1. Dapatkan ID user dari JWT
 	userID, err := utils.ExtractUserIDFromJWT(c)
@@ -440,20 +529,28 @@ func (h *UserHandler) GetMyProfile(c *fiber.Ctx) error {
 	})
 }
 
+// GetAllShifts godoc
+// @Summary Get all shifts
+// @Description Retrieves a list of all shifts.
+// @Tags Public
+// @Produce json
+// @Success 200 {object} models.Response{data=[]models.Shift} "Shifts retrieved successfully"
+// @Failure 500 {object} models.Response "Failed to retrieve shifts"
+// @Router /shifts [get]
 func (h *UserHandler) GetAllShifts(c *fiber.Ctx) error {
-    // Dapatkan ID user dari JWT (walaupun tidak dipakai di query, baik untuk log/konteks)
-    userID, _ := utils.ExtractUserIDFromJWT(c) // Abaikan error jika hanya untuk log
+	// Dapatkan ID user dari JWT (walaupun tidak dipakai di query, baik untuk log/konteks)
+	userID, _ := utils.ExtractUserIDFromJWT(c) // Abaikan error jika hanya untuk log
 
-    shifts, err := h.ShiftRepo.GetAllShifts(context.Background())
-    if err != nil {
-        zlog.Error().Err(err).Int("user_id", userID).Msg("Failed to get all shifts from repository")
-        return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
-            Success: false, Message: "Failed to retrieve shifts",
-        })
-    }
+	shifts, err := h.ShiftRepo.GetAllShifts(context.Background())
+	if err != nil {
+		zlog.Error().Err(err).Int("user_id", userID).Msg("Failed to get all shifts from repository")
+		return c.Status(fiber.StatusInternalServerError).JSON(models.Response{
+			Success: false, Message: "Failed to retrieve shifts",
+		})
+	}
 
-    zlog.Info().Int("user_id", userID).Int("shift_count", len(shifts)).Msg("Successfully retrieved all shifts")
-    return c.Status(http.StatusOK).JSON(models.Response{
-        Success: true, Message: "Shifts retrieved successfully", Data: shifts,
-    })
+	zlog.Info().Int("user_id", userID).Int("shift_count", len(shifts)).Msg("Successfully retrieved all shifts")
+	return c.Status(http.StatusOK).JSON(models.Response{
+		Success: true, Message: "Shifts retrieved successfully", Data: shifts,
+	})
 }

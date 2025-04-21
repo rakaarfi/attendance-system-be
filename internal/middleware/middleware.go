@@ -37,7 +37,7 @@ func SetupGlobalMiddleware(app *fiber.App) {
 	app.Use(cors.New(cors.Config{
 		// AllowOrigins: "*", // Izinkan semua origin (HATI-HATI di production!)
 		// Ganti dengan daftar origin frontend Anda di production, pisahkan dengan koma.
-		AllowOrigins: "http://localhost:5173, http://127.0.0.1:5173, https://frontend-domain-anda.com",
+		AllowOrigins: "http://localhost:5173, http://127.0.0.1:5173, https://frontend-domain-anda.com, http://localhost:3001",
 		AllowMethods: "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",      // Metode HTTP yang diizinkan.
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization", // Header yang boleh dikirim oleh klien.
 		// AllowCredentials: true, // Set true jika perlu mengirim cookie lintas domain.

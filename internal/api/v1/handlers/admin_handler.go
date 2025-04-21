@@ -89,7 +89,9 @@ func parseAdminDateQueryParams(c *fiber.Ctx) (startDate time.Time, endDate time.
 	return startDate, endDate, nil
 }
 
-// --- Shift Management ---
+// -------------------------------------------------------------------------
+// Shift Management
+// -------------------------------------------------------------------------
 // CreateShift godoc
 // @Summary Create new shift
 // @Description Creates a new shift and returns the ID of the created shift.
@@ -101,6 +103,7 @@ func parseAdminDateQueryParams(c *fiber.Ctx) (startDate time.Time, endDate time.
 // @Failure 400 {object} models.Response "Validation failed or invalid request body"
 // @Failure 409 {object} models.Response "Shift with same name already exists"
 // @Failure 500 {object} models.Response "Internal server error during shift creation"
+// @Security ApiKeyAuth
 // @Router /admin/shifts [post]
 func (h *AdminHandler) CreateShift(c *fiber.Ctx) error {
 	input := new(models.Shift)
@@ -162,6 +165,7 @@ func (h *AdminHandler) CreateShift(c *fiber.Ctx) error {
 // @Produce json
 // @Success 200 {object} models.Response{data=[]models.Shift} "Shifts retrieved successfully"
 // @Failure 500 {object} models.Response "Failed to retrieve shifts"
+// @Security ApiKeyAuth
 // @Router /admin/shifts [get]
 func (h *AdminHandler) GetAllShifts(c *fiber.Ctx) error {
 	shifts, err := h.ShiftRepo.GetAllShifts(context.Background())
@@ -189,6 +193,7 @@ func (h *AdminHandler) GetAllShifts(c *fiber.Ctx) error {
 // @Failure 400 {object} models.Response "Invalid Shift ID parameter"
 // @Failure 404 {object} models.Response "Shift not found"
 // @Failure 500 {object} models.Response "Failed to retrieve shift"
+// @Security ApiKeyAuth
 // @Router /admin/shifts/{shiftId} [get]
 func (h *AdminHandler) GetShiftByID(c *fiber.Ctx) error {
 	idStr := c.Params("shiftId")
@@ -232,6 +237,7 @@ func (h *AdminHandler) GetShiftByID(c *fiber.Ctx) error {
 // @Failure 400 {object} models.Response "Invalid Shift ID parameter or request body"
 // @Failure 404 {object} models.Response "Shift not found"
 // @Failure 500 {object} models.Response "Internal server error during shift update"
+// @Security ApiKeyAuth
 // @Router /admin/shifts/{shiftId} [put]
 func (h *AdminHandler) UpdateShift(c *fiber.Ctx) error {
 	idStr := c.Params("shiftId")
@@ -299,6 +305,7 @@ func (h *AdminHandler) UpdateShift(c *fiber.Ctx) error {
 // @Failure 404 {object} models.Response "Shift not found"
 // @Failure 409 {object} models.Response "Shift still referenced by user schedules"
 // @Failure 500 {object} models.Response "Internal server error during shift deletion"
+// @Security ApiKeyAuth
 // @Router /admin/shifts/{shiftId} [delete]
 func (h *AdminHandler) DeleteShift(c *fiber.Ctx) error {
 	idStr := c.Params("shiftId")
@@ -336,8 +343,9 @@ func (h *AdminHandler) DeleteShift(c *fiber.Ctx) error {
 	})
 }
 
-// --- Schedule Management ---
-
+// -------------------------------------------------------------------------
+// Schedule Management
+// -------------------------------------------------------------------------
 // CreateSchedule godoc
 // @Summary Create new schedule
 // @Description Creates a new schedule with a given user ID and shift ID.
@@ -349,6 +357,7 @@ func (h *AdminHandler) DeleteShift(c *fiber.Ctx) error {
 // @Failure 400 {object} models.Response "Validation failed or invalid request body"
 // @Failure 409 {object} models.Response "User already has a schedule on same date and time"
 // @Failure 500 {object} models.Response "Internal server error during schedule creation"
+// @Security ApiKeyAuth
 // @Router /admin/schedules [post]
 func (h *AdminHandler) CreateSchedule(c *fiber.Ctx) error {
 	input := new(models.UserSchedule)
@@ -428,6 +437,7 @@ func (h *AdminHandler) CreateSchedule(c *fiber.Ctx) error {
 // @Failure 400 {object} models.Response "Validation failed or invalid request body"
 // @Failure 404 {object} models.Response "User not found"
 // @Failure 500 {object} models.Response "Internal server error during schedule retrieval"
+// @Security ApiKeyAuth
 // @Router /admin/users/{userId}/schedules [get]
 func (h *AdminHandler) GetUserSchedules(c *fiber.Ctx) error {
 	// 1. Parse User ID
@@ -506,6 +516,7 @@ func (h *AdminHandler) GetUserSchedules(c *fiber.Ctx) error {
 // @Success 200 {object} models.Response{data=[]models.UserSchedule} "Schedules retrieved successfully"
 // @Failure 400 {object} models.Response "Validation failed or invalid request body"
 // @Failure 500 {object} models.Response "Internal server error during schedule retrieval"
+// @Security ApiKeyAuth
 // @Router /admin/schedules [get]
 func (h *AdminHandler) GetAllSchedules(c *fiber.Ctx) error {
 	// 1. Parse Tanggal
@@ -566,6 +577,7 @@ func (h *AdminHandler) GetAllSchedules(c *fiber.Ctx) error {
 // @Failure 404 {object} models.Response "Schedule not found"
 // @Failure 409 {object} models.Response "User already has a schedule on same date and time"
 // @Failure 500 {object} models.Response "Internal server error during schedule update"
+// @Security ApiKeyAuth
 // @Router /admin/schedules/{scheduleId} [patch]
 func (h *AdminHandler) UpdateSchedule(c *fiber.Ctx) error {
 	scheduleIDStr := c.Params("scheduleId") // Sesuaikan nama param
@@ -649,6 +661,7 @@ func (h *AdminHandler) UpdateSchedule(c *fiber.Ctx) error {
 // @Failure 400 {object} models.Response "Invalid request"
 // @Failure 404 {object} models.Response "Schedule not found"
 // @Failure 500 {object} models.Response "Internal server error during schedule deletion"
+// @Security ApiKeyAuth
 // @Router /admin/schedules/{scheduleId} [delete]
 func (h *AdminHandler) DeleteSchedule(c *fiber.Ctx) error {
 	scheduleIDStr := c.Params("scheduleId") // Sesuaikan nama param
@@ -681,8 +694,9 @@ func (h *AdminHandler) DeleteSchedule(c *fiber.Ctx) error {
 	})
 }
 
-// --- Attendance Reporting ---
-
+// -------------------------------------------------------------------------
+// Attendance Reporting
+// -------------------------------------------------------------------------
 const defaultDateFormat = "2006-01-02"
 
 // parseDateQueryParam parses YYYY-MM-DD query param or returns default
@@ -719,6 +733,7 @@ func parseDateQueryParam(c *fiber.Ctx, paramName string, defaultValue time.Time)
 // @Failure 400 {object} models.Response "Validation failed or invalid request parameters"
 // @Failure 404 {object} models.Response "User not found"
 // @Failure 500 {object} models.Response "Internal server error during attendance retrieval"
+// @Security ApiKeyAuth
 // @Router /admin/users/{userId}/attendance [get]
 func (h *AdminHandler) GetUserAttendance(c *fiber.Ctx) error {
 	// 1. Dapatkan ID user target
@@ -800,6 +815,7 @@ func (h *AdminHandler) GetUserAttendance(c *fiber.Ctx) error {
 // @Success 200 {object} models.Response{data=[]models.Attendance} "Attendance report retrieved successfully"
 // @Failure 400 {object} models.Response "Validation failed or invalid request parameters"
 // @Failure 500 {object} models.Response "Internal server error during attendance retrieval"
+// @Security ApiKeyAuth
 // @Router /admin/attendance/report [get]
 func (h *AdminHandler) GetAttendanceReport(c *fiber.Ctx) error {
 	// 1. Parse Tanggal
@@ -849,8 +865,9 @@ func (h *AdminHandler) GetAttendanceReport(c *fiber.Ctx) error {
 	return c.Status(http.StatusOK).JSON(response)
 }
 
-// --- User Management --
-
+// -------------------------------------------------------------------------
+// User Management
+// -------------------------------------------------------------------------
 // GetAllUsers godoc
 // @Summary Get All Users (Admin)
 // @Description Retrieves a paginated list of all users. Requires Admin role.
@@ -952,6 +969,7 @@ func (h *AdminHandler) GetAllUsers(c *fiber.Ctx) error {
 // @Failure 400 {object} models.Response "Invalid User ID parameter"
 // @Failure 404 {object} models.Response "User not found"
 // @Failure 500 {object} models.Response "Internal server error during user retrieval"
+// @Security ApiKeyAuth
 // @Router /admin/users/{userId} [get]
 func (h *AdminHandler) GetUserByID(c *fiber.Ctx) error {
 	userIdStr := c.Params("userId")
@@ -999,6 +1017,7 @@ func (h *AdminHandler) GetUserByID(c *fiber.Ctx) error {
 // @Failure 400 {object} models.Response "Validation failed or invalid request body"
 // @Failure 404 {object} models.Response "User not found"
 // @Failure 500 {object} models.Response "Internal server error during user update"
+// @Security ApiKeyAuth
 // @Router /admin/users/{userId} [patch]
 func (h *AdminHandler) UpdateUser(c *fiber.Ctx) error {
 	// 1. Dapatkan ID user target dari URL
@@ -1141,8 +1160,9 @@ func (h *AdminHandler) DeleteUser(c *fiber.Ctx) error {
 	})
 }
 
-// --- Role Management --
-
+// -------------------------------------------------------------------------
+// Role Management
+// -------------------------------------------------------------------------
 // CreateRole godoc
 // @Summary Create new role
 // @Description Creates a new role and returns the ID of the created role.
@@ -1228,6 +1248,7 @@ func (h *AdminHandler) GetAllRoles(c *fiber.Ctx) error {
 // @Failure 400 {object} models.Response "Invalid Role ID parameter"
 // @Failure 404 {object} models.Response "Role not found"
 // @Failure 500 {object} models.Response "Internal server error during role retrieval"
+// @Security ApiKeyAuth
 // @Router /admin/roles/{roleId} [get]
 func (h *AdminHandler) GetRoleByID(c *fiber.Ctx) error {
 	roleIDStr := c.Params("roleId")
@@ -1271,6 +1292,7 @@ func (h *AdminHandler) GetRoleByID(c *fiber.Ctx) error {
 // @Failure 400 {object} models.Response "Validation failed or invalid request body"
 // @Failure 404 {object} models.Response "Role not found"
 // @Failure 500 {object} models.Response "Internal server error during role update"
+// @Security ApiKeyAuth
 // @Router /admin/roles/{roleId} [patch]
 func (h *AdminHandler) UpdateRole(c *fiber.Ctx) error {
 	roleIDStr := c.Params("roleId")
@@ -1332,6 +1354,7 @@ func (h *AdminHandler) UpdateRole(c *fiber.Ctx) error {
 // @Failure 403 {object} models.Response "Cannot delete base roles (Admin/Employee)"
 // @Failure 404 {object} models.Response "Role not found"
 // @Failure 500 {object} models.Response "Internal server error during role deletion"
+// @Security ApiKeyAuth
 // @Router /admin/roles/{roleId} [delete]
 func (h *AdminHandler) DeleteRole(c *fiber.Ctx) error {
 	roleIDStr := c.Params("roleId")

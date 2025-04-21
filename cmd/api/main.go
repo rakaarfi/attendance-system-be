@@ -21,25 +21,25 @@ import (
 
 // --- Anotasi Global Swagger/OpenAPI ---
 // Anotasi ini dibaca oleh 'swag init' untuk menghasilkan dokumentasi API.
-// @title Sistem Absensi Pegawai API              // Judul API
-// @version 1.0                                   // Versi API saat ini
-// @description API backend untuk sistem absensi pegawai dengan role dan shift. // Deskripsi singkat API
-// @termsOfService http://swagger.io/terms/       // Link ke Terms of Service (jika ada)
+// @title Sistem Absensi Pegawai API
+// @version 1.0
+// @description API backend untuk sistem absensi pegawai dengan role dan shift.
+// @termsOfService http://swagger.io/terms/
 
-// @contact.name API Support                      // Nama kontak support
-// @contact.url http://www.swagger.io/support     // URL kontak support
-// @contact.email support@swagger.io              // Email kontak support
+// @contact.name API Support
+// @contact.url http://www.swagger.io/support
+// @contact.email support@swagger.io
 
-// @license.name Apache 2.0                       // Nama lisensi API
-// @license.url http://www.apache.org/licenses/LICENSE-2.0.html // URL lisensi API
+// @license.name Apache 2.0
+// @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
-// @host localhost:3000                           // Host dan port tempat API dapat diakses (sesuaikan untuk production)
-// @BasePath /api/v1                              // Path dasar untuk semua rute API versi 1
+// @host localhost:3001
+// @BasePath /api/v1
 
-// @securityDefinitions.apikey ApiKeyAuth         // Mendefinisikan skema keamanan bernama 'ApiKeyAuth'
-// @in header                                     // Menentukan bahwa kunci keamanan dikirim via header HTTP
-// @name Authorization                            // Nama header HTTP yang digunakan (untuk Bearer token)
-// @description "Type 'Bearer YOUR_JWT_TOKEN' into the value field." // Petunjuk penggunaan di Swagger UI
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
+// @description "Type 'Bearer YOUR_JWT_TOKEN' into the value field."
 // --- Akhir Anotasi Swagger ---
 
 // main adalah fungsi entry point aplikasi Go.

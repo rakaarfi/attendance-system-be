@@ -41,6 +41,16 @@ definitions:
     required:
     - user_id
     type: object
+  models.CheckInInput:
+    properties:
+      notes:
+        type: string
+    type: object
+  models.CheckOutInput:
+    properties:
+      notes:
+        type: string
+    type: object
   models.LoginUserInput:
     properties:
       password:
@@ -116,6 +126,34 @@ definitions:
     - name
     - start_time
     type: object
+  models.UpdatePasswordInput:
+    properties:
+      new_password:
+        minLength: 6
+        type: string
+      old_password:
+        minLength: 6
+        type: string
+    required:
+    - new_password
+    - old_password
+    type: object
+  models.UpdateProfileInput:
+    properties:
+      email:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+      username:
+        maxLength: 100
+        minLength: 3
+        type: string
+    required:
+    - email
+    - username
+    type: object
   models.User:
     properties:
       created_at:
@@ -165,7 +203,7 @@ definitions:
     - shift_id
     - user_id
     type: object
-host: localhost:3000
+host: localhost:3001
 info:
   contact:
     email: support@swagger.io
@@ -224,6 +262,8 @@ paths:
           description: Internal server error during attendance retrieval
           schema:
             $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Get attendance report
       tags:
       - Admin - Attendance Management
@@ -329,6 +369,8 @@ paths:
           description: Internal server error during role deletion
           schema:
             $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Delete role
       tags:
       - Admin - Roles Management
@@ -366,6 +408,8 @@ paths:
           description: Internal server error during role retrieval
           schema:
             $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Get role by ID
       tags:
       - Admin - Roles Management
@@ -404,6 +448,8 @@ paths:
           description: Internal server error during role update
           schema:
             $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Update role
       tags:
       - Admin - Roles Management
@@ -451,6 +497,8 @@ paths:
           description: Internal server error during schedule retrieval
           schema:
             $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Get all schedules
       tags:
       - Admin - Schedule Management
@@ -489,6 +537,8 @@ paths:
           description: Internal server error during schedule creation
           schema:
             $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Create new schedule
       tags:
       - Admin - Schedule Management
@@ -522,6 +572,8 @@ paths:
           description: Internal server error during schedule deletion
           schema:
             $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Delete schedule
       tags:
       - Admin - Schedule Management
@@ -564,6 +616,8 @@ paths:
           description: Internal server error during schedule update
           schema:
             $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Update schedule
       tags:
       - Admin - Schedule Management
@@ -590,6 +644,8 @@ paths:
           description: Failed to retrieve shifts
           schema:
             $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Get all shifts
       tags:
       - Admin - Shift Management
@@ -628,6 +684,8 @@ paths:
           description: Internal server error during shift creation
           schema:
             $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Create new shift
       tags:
       - Admin - Shift Management
@@ -665,6 +723,8 @@ paths:
           description: Internal server error during shift deletion
           schema:
             $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Delete shift
       tags:
       - Admin - Shift Management
@@ -702,6 +762,8 @@ paths:
           description: Failed to retrieve shift
           schema:
             $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Get shift by ID
       tags:
       - Admin - Shift Management
@@ -740,6 +802,8 @@ paths:
           description: Internal server error during shift update
           schema:
             $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Update shift
       tags:
       - Admin - Shift Management
@@ -867,6 +931,8 @@ paths:
           description: Internal server error during user retrieval
           schema:
             $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Get user by ID
       tags:
       - Admin - Users Management
@@ -905,6 +971,8 @@ paths:
           description: Internal server error during user update
           schema:
             $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Update user
       tags:
       - Admin - Users Management
@@ -962,6 +1030,8 @@ paths:
           description: Internal server error during attendance retrieval
           schema:
             $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Get user attendance
       tags:
       - Admin - Attendance Management
@@ -1018,6 +1088,8 @@ paths:
           description: Internal server error during schedule retrieval
           schema:
             $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
       summary: Get schedules for user
       tags:
       - Admin - Schedule Management
@@ -1104,6 +1176,307 @@ paths:
       summary: Register New User
       tags:
       - Authentication
+  /health:
+    get:
+      description: Public endpoint to verify that the API is running and responsive.
+      operationId: health-check
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Check Health
+      tags:
+      - Public
+  /shifts:
+    get:
+      description: Retrieves a list of all shifts.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Shifts retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.Shift'
+                  type: array
+              type: object
+        "500":
+          description: Failed to retrieve shifts
+          schema:
+            $ref: '#/definitions/models.Response'
+      summary: Get all shifts
+      tags:
+      - Public
+  /user/attendance/checkin:
+    post:
+      consumes:
+      - application/json
+      description: Create a new record of check-in for the user. The request body
+        should contain the notes for the check-in (optional).
+      parameters:
+      - description: Check-in notes
+        in: body
+        name: check_in_input
+        required: true
+        schema:
+          $ref: '#/definitions/models.CheckInInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a check-in record
+      tags:
+      - User - Check In/Out
+  /user/attendance/checkout:
+    post:
+      consumes:
+      - application/json
+      description: Create a new record of check-out for the user. The request body
+        should contain the notes for the check-out (optional).
+      parameters:
+      - description: Check-out notes
+        in: body
+        name: check_out_input
+        required: true
+        schema:
+          $ref: '#/definitions/models.CheckOutInput'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.Response'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a check-out record
+      tags:
+      - User - Check In/Out
+  /user/attendance/my:
+    get:
+      consumes:
+      - application/json
+      description: Get attendance records for the current user within a date range.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Get attendance records for current user
+      tags:
+      - User - Schedule/Attendance
+  /user/password:
+    patch:
+      consumes:
+      - application/json
+      description: Updates the current user's password.
+      parameters:
+      - description: Password Update Details
+        in: body
+        name: update_password
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdatePasswordInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password updated successfully
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Validation failed or invalid request body
+          schema:
+            $ref: '#/definitions/models.Response'
+        "401":
+          description: Invalid old password
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during password update
+          schema:
+            $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Update My Password
+      tags:
+      - User - Profile Management
+  /user/profile:
+    get:
+      description: Get the profile for the current user.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile data for current user
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  additionalProperties: true
+                  type: object
+              type: object
+        "400":
+          description: Validation failed or invalid request body
+          schema:
+            $ref: '#/definitions/models.Response'
+        "401":
+          description: Failed to identify user
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during profile retrieval
+          schema:
+            $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Get my profile
+      tags:
+      - User - Profile Management
+    patch:
+      consumes:
+      - application/json
+      description: Update the profile for the current user.
+      parameters:
+      - description: Profile update information
+        in: body
+        name: update_profile_input
+        required: true
+        schema:
+          $ref: '#/definitions/models.UpdateProfileInput'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Profile updated successfully
+          schema:
+            $ref: '#/definitions/models.Response'
+        "400":
+          description: Validation failed or invalid request body
+          schema:
+            $ref: '#/definitions/models.Response'
+        "401":
+          description: Failed to identify user
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during profile update
+          schema:
+            $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Update my profile
+      tags:
+      - User - Profile Management
+  /user/schedules/my:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of schedules for the current user within a date
+        range.
+      parameters:
+      - description: Start date for schedule retrieval (YYYY-MM-DD)
+        in: query
+        name: start_date
+        type: string
+      - description: End date for schedule retrieval (YYYY-MM-DD)
+        in: query
+        name: end_date
+        type: string
+      - description: Page number for pagination
+        in: query
+        name: page
+        type: integer
+      - description: Limit of schedules per page
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Schedules retrieved successfully
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/models.UserSchedule'
+                  type: array
+              type: object
+        "400":
+          description: Validation failed or invalid request parameters
+          schema:
+            $ref: '#/definitions/models.Response'
+        "500":
+          description: Internal server error during schedule retrieval
+          schema:
+            $ref: '#/definitions/models.Response'
+      security:
+      - ApiKeyAuth: []
+      summary: Get schedules for the current user
+      tags:
+      - User - Schedule/Attendance
 securityDefinitions:
   ApiKeyAuth:
     description: '"Type ''Bearer YOUR_JWT_TOKEN'' into the value field."'

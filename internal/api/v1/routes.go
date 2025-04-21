@@ -88,11 +88,20 @@ func SetupRoutes(app *fiber.App, authHandler *handlers.AuthHandler, adminHandler
 	// =========================================================================
 	// Rute Lain-lain (Publik)
 	// =========================================================================
-	// Endpoint untuk memeriksa status kesehatan/ketersediaan API
-	api.Get("/health", func(c *fiber.Ctx) error {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "UP"})
-	})
+	api.Get("/health", HealthCheck)
 
 	// Endpoint untuk melihat semua shift
 	api.Get("/shifts", userHandler.GetAllShifts)
+}
+
+// HealthCheck godoc
+// @Summary Check Health
+// @Description Public endpoint to verify that the API is running and responsive.
+// @Tags Public
+// @ID health-check
+// @Produce json
+// @Success 200 {object} map[string]string `json:"status"`
+// @Router /health [get]
+func HealthCheck(c *fiber.Ctx) error {
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{"status": "UP"})
 }
