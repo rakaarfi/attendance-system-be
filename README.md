@@ -91,6 +91,26 @@ This project uses environment variables for configuration. You can set them dire
     ```
 2.  The API will be available at `http://localhost:APP_PORT` (defaulting to port 3000 if `APP_PORT` is not set in your `.env` file).
 
+## API Documentation (Swagger)
+
+This project uses Swagger/OpenAPI for API documentation.
+
+1.  **Generate/Update Documentation:**
+    After adding or modifying API endpoint annotations (`// @Summary`, `// @Description`, etc.) in the handler files, regenerate the Swagger documentation files using the `swag` CLI tool:
+    ```bash
+    swag init -g cmd/api/main.go
+    ```
+    This command parses the annotations and updates the files in the `docs/` directory.
+
+2.  **Accessing the Documentation:**
+    Once the application is running (using `go run cmd/api/main.go`), you can access the interactive Swagger UI in your browser at:
+    ```
+    http://localhost:APP_PORT/swagger/index.html
+    ```
+    (Replace `APP_PORT` with the actual port number if it's not the default 3000).
+
+    The Swagger UI allows you to explore the available endpoints, view their details (parameters, responses), and even try them out directly.
+
 ## API Structure
 
 The main API routes are versioned and available under the `/api/v1` path.
@@ -115,6 +135,7 @@ Unit tests are planned for future development. Mock implementations for reposito
 │   │   └── mocks/       # Mock implementations for testing
 │   └── utils/           # Utility functions (hashing, JWT, pagination, etc.)
 ├── migrations/          # Database migration files (.sql)
+├── docs/                # Generated Swagger/OpenAPI documentation files
 ├── .env.example         # Example environment file (to be created based on README)
 ├── .gitignore           # Git ignore rules
 ├── go.mod               # Go module definition
